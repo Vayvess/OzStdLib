@@ -1,0 +1,1 @@
+ozc -c Main.oz
