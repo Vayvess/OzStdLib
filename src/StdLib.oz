@@ -1,18 +1,49 @@
 functor
 
-import
-    System
 export
     % DATA STRUCTURES
     'newFQ': NewFuncQueue
+    'newFS': NewFuncStack
 
     % HELPERS
     'spawnAgent': SpawnAgent
     'newActiveObject': NewActiveObject
 define
 
-    % FUNCTIONAL QUEUE
+    % FUNCTIONAL STACK
+    fun {FuncStack State}
+        fun {Push push(X)}
+            {FuncStack X | State}
+        end
 
+        fun {Pop pop(Out)}
+            H | T = State
+        in
+            Out = H
+            {FuncStack T}
+        end
+
+        fun {IsEmpty Out}
+            Out = State == 'nil'
+            {FuncStack State}
+        end
+    in
+        fun {$ Msg}
+            Interface = fs(
+                'push': Push
+                'pop': Pop
+                'isEmpty': IsEmpty
+            )
+        in
+            {Interface.{Label Msg} Msg}
+        end
+    end
+
+    fun {NewFuncStack}
+        {FuncStack 'nil'}
+    end
+
+    % FUNCTIONAL QUEUE
     % params([1 2 3] [4 5 6]) returns -> [1 2 3 4 5 6]
     fun {Append X Y}
         case X of XH | XT then
@@ -35,11 +66,7 @@ define
             else
                 {Append X Acc}
             end
-        else
-            case Y of YH | YT then
-                {Reverse Y Acc}
-            else Acc end
-        end
+        else {Reverse Y Acc} end
     end
 
     fun {FuncQueue State}
@@ -65,7 +92,6 @@ define
             {Check fq(M - 1 XT N Y)}
         end
     in
-        {System.show State}
         fun {$ Msg}
             Interface = fq('put': Put 'get': Get)
         in
@@ -76,7 +102,7 @@ define
     fun {NewFuncQueue}
         {FuncQueue fq(0 'nil' 0 'nil')}
     end
-
+    
     % HELPERS
     fun {NewActiveObject Class Init}
         Stream
@@ -95,7 +121,9 @@ define
         Port = {NewPort Stream}
 
         proc {Handler Msg | Upcoming Agent}
-            {Handler Upcoming {Agent Msg}}
+            case Msg of join(Output) then
+                Output = Agent
+            else {Handler Upcoming {Agent Msg}} end
         end
     in
         thread {Handler Stream Agent} end

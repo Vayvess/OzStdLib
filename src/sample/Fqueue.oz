@@ -1,9 +1,8 @@
 functor
 
 import
-    StdLib
     System
-    Browser
+    StdLib
 define
     A = {StdLib.newFQ}
     B = {A put(5)}
